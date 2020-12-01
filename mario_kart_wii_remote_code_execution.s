@@ -4,7 +4,7 @@
 # Author  : Star                                             #
 # Date    : Nov 23 2020                                      #
 # File    : mario_kart_wii_remote_code_execution.s           #
-# Version : 1.1.0.4                                          #
+# Version : 1.2.0.0                                          #
 #------------------------------------------------------------#
 # Description: This code will inject and execute arbitrary   #
 # code on a client.                                          #
